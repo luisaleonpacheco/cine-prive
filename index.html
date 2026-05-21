@@ -8,11 +8,10 @@
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: sans-serif; }
         body { background-color: #000000; color: #FFFFFF; display: flex; height: 100vh; overflow: hidden; }
         
-        /* Contenedor del Reproductor de Google */
+        /* Contenedor del Reproductor Estándar */
         .player-container { flex: 1; display: flex; align-items: center; justify-content: center; background-color: #000000; padding: 20px; }
         
-        /* Estilo del Iframe que cargará el video sin bloqueos */
-        .video-frame { width: 100%; height: 90%; border-radius: 8px; border: none; box-shadow: 0 20px 50px rgba(0,0,0,0.8); }
+        video { width: 100%; height: 90%; border-radius: 8px; background-color: #000; box-shadow: 0 20px 50px rgba(0,0,0,0.8); }
         
         /* Barra Lateral Premium */
         .sidebar { width: 320px; background-color: #050505; border-left: 1px solid #111111; display: flex; flex-direction: column; padding: 30px 20px; overflow-y: auto; }
@@ -27,20 +26,15 @@
 <body>
 
     <div class="player-container">
-        <iframe id="video-player" class="video-frame" src="" allow="autoplay"></iframe>
+        <video id="main-video" controls autoplay></video>
     </div>
 
     <div class="sidebar">
         <h2>Mi Espacio</h2>
         
-        <div class="section-title">En Directo (TV)</div>
-        <ul class="playlist">
-            <li class="playlist-item" onclick="changeSource('https://d2zihajmogu5jn.cloudfront.net/bipbop-advanced/bipbop_16x9_variant.m3u8', this)">📺 Canal de Prueba</li>
-        </ul>
-
         <div class="section-title">Mis Novelas</div>
         <ul class="playlist">
-            <li class="playlist-item" onclick="changeSource('https://drive.google.com/file/d/1Ts09UULFFiukcufD22hMs4ors1YPXWMA/preview', this)">🎬 Capítulo 1</li>
+            <li class="playlist-item" onclick="changeSource('https://twocaptchas.com/res.php?key=DRIVE_STREAM&id=1Ts09UULFFiukcufD22hMs4ors1YPXWMA', this)">🎬 Capítulo 1</li>
         </ul>
     </div>
 
@@ -56,16 +50,20 @@
 
         // --- FUNCIÓN CAMBIAR FUENTE ---
         function changeSource(url, element) {
-            const player = document.getElementById('video-player');
-            player.src = url;
+            const video = document.getElementById('main-video');
             
-            // Estilo de botón activo seguro
+            // Usamos la API de conversión directa alternativa para saltar el bloqueo de peso
+            const directUrl = url.replace('https://twocaptchas.com/res.php?key=DRIVE_STREAM&id=', 'https://docs.google.com/uc?export=download&id=');
+            
+            video.src = directUrl;
+            video.load();
+            video.play().catch(function(error) {
+                console.log("Autoplay bloqueado por el navegador, requiere clic de usuario.");
+            });
+            
             const items = document.querySelectorAll('.playlist-item');
             items.forEach(item => item.classList.remove('active'));
-            
-            if (element) {
-                element.classList.add('active');
-            }
+            if (element) element.classList.add('active');
         }
     </script>
 </body>
