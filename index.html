@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cinema Privé</title>
+    <link href="https://vjs.zencdn.net/8.3.0/video-js.css" rel="stylesheet" />
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: sans-serif; }
+        body { background-color: #000000; color: #FFFFFF; display: flex; height: 100vh; overflow: hidden; }
+        .player-container { flex: 1; display: flex; align-items: center; justify-content: center; background-color: #000000; padding: 20px; }
+        .video-js { width: 100% !important; height: 100% !important; border-radius: 8px; box-shadow: 0 20px 50px rgba(0,0,0,0.8); }
+        .sidebar { width: 320px; background-color: #050505; border-left: 1px solid #111111; display: flex; flex-direction: column; padding: 30px 20px; overflow-y: auto; }
+        .sidebar h2 { font-size: 1.1rem; font-weight: 400; letter-spacing: 2px; margin-bottom: 30px; text-transform: uppercase; color: #E5E5E5; }
+        .section-title { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; color: #666666; margin: 20px 0 10px 0; }
+        .playlist { list-style: none; }
+        .playlist-item { padding: 12px 15px; background-color: #0A0A0A; border-radius: 6px; margin-bottom: 8px; cursor: pointer; font-size: 0.9rem; transition: all 0.3s ease; border: 1px solid transparent; }
+        .playlist-item:hover { background-color: #111111; border-color: #222222; }
+        .playlist-item.active { background-color: #FFFFFF; color: #000000; font-weight: 500; }
+    </style>
+</head>
+<body>
+
+    <div class="player-container">
+        <video id="my-video" class="video-js vjs-big-play-centered vjs-fluid" controls preload="auto">
+            <p class="vjs-no-js">Para ver este video, por favor habilita JavaScript.</p>
+        </video>
+    </div>
+
+    <div class="sidebar">
+        <h2>Mi Espacio</h2>
+        
+        <div class="section-title">En Directo (TV)</div>
+        <ul class="playlist">
+            <!-- Dejamos canales de prueba, luego los ajustamos si quieres -->
+            <li class="playlist-item" onclick="changeSource('https://d2zihajmogu5jn.cloudfront.net/bipbop-advanced/bipbop_16x9_variant.m3u8', 'Canal Prueba')">📺 Canal de Prueba</li>
+        </ul>
+
+        <div class="section-title">Mis Novelas</div>
+        <ul class="playlist">
+            <!-- Aquí pondremos tu enlace de Drive en el siguiente paso -->
+            <li class="playlist-item" onclick="changeSource('AQUI_IRA_EL_LINK_LUEGO', 'Capítulo 1')">🎬 Capítulo 1</li>
+        </ul>
+    </div>
+
+    <script src="https://vjs.zencdn.net/8.3.0/video.js"></script>
+    <script>
+        // --- SISTEMA DE PROTECCIÓN ---
+        const CLAVE_SECRETA = "lunita88"; // <-- CAMBIA ESTO MANTENIENDO LAS COMILLAS
+        
+        let acceso = prompt("Introduce la clave de acceso privado:");
+        if (acceso !== CLAVE_SECRETA) {
+            document.body.innerHTML = "<h1 style='color: #111; text-align: center; margin-top: 20%; font-weight: 300;'>404 - Not Found</h1>";
+            window.stop();
+        }
+
+        // --- REPRODUCTOR ---
+        var player = videojs('my-video');
+        function changeSource(url, title) {
+            player.src({
+                src: url,
+                type: url.includes('.m3u8') ? 'application/x-mpegURL' : 'video/mp4'
+            });
+            player.play();
+        }
+    </script>
+</body>
+</html>
