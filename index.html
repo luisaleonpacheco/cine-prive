@@ -3,70 +3,225 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cinema Privé</title>
+    <title>Cinema Privé - Premium</title>
+    <link href="https://vjs.zencdn.net/8.3.0/video-js.css" rel="stylesheet" />
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: sans-serif; }
-        body { background-color: #000000; color: #FFFFFF; display: flex; height: 100vh; overflow: hidden; }
+        body { background-color: #000000; color: #FFFFFF; height: 100vh; overflow: hidden; }
+
+        /* PANTALLA DE INICIO (HOME) */
+        .home-screen {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            background-color: #000000;
+            gap: 40px;
+        }
+        .home-screen h1 { font-size: 1.8rem; font-weight: 300; letter-spacing: 4px; text-transform: uppercase; color: #E5E5E5; }
+        .card-container { display: flex; gap: 30px; }
+        .mode-card {
+            width: 240px;
+            height: 160px;
+            background-color: #050505;
+            border: 1px solid #111111;
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .mode-card:hover { background-color: #111111; border-color: #333333; transform: scale(1.05); }
+        .mode-card span { font-size: 2.5rem; margin-bottom: 10px; }
+        .mode-card p { font-size: 0.9rem; text-transform: uppercase; letter-spacing: 2px; font-weight: bold; }
+
+        /* INTERFAZ DEL REPRODUCTOR (OCULTA POR DEFECTO) */
+        .main-interface { display: none; height: 100vh; }
+        .player-container { flex: 1; display: flex; flex-direction: column; padding: 20px; background-color: #000000; justify-content: center; position: relative; }
         
-        /* Contenedor del Reproductor Estándar */
-        .player-container { flex: 1; display: flex; align-items: center; justify-content: center; background-color: #000000; padding: 20px; }
+        /* Botón para volver al Home */
+        .btn-back {
+            position: absolute; top: 20px; left: 20px; background: #050505; border: 1px solid #222;
+            color: #fff; padding: 10px 15px; border-radius: 4px; cursor: pointer; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 1px; z-index: 10;
+        }
+        .btn-back:hover { background: #111; }
+
+        /* Selectores dinámicos de reproductores */
+        #drive-player { width: 100%; height: 85%; border-radius: 8px; background: #000; box-shadow: 0 20px 50px rgba(0,0,0,0.8); display: none; }
+        #live-player-wrapper { width: 100%; height: 85%; display: none; border-radius: 8px; overflow: hidden; box-shadow: 0 20px 50px rgba(0,0,0,0.8); }
+        .video-js { width: 100% !important; height: 100% !important; }
+
+        /* BARRA LATERAL DINÁMICA */
+        .sidebar { width: 320px; background-color: #050505; border-left: 1px solid #111111; display: flex; flex-direction: column; padding: 30px 20px; }
+        .sidebar h2 { font-size: 1.1rem; font-weight: 400; letter-spacing: 2px; margin-bottom: 20px; text-transform: uppercase; color: #E5E5E5; }
         
-        video { width: 100%; height: 90%; border-radius: 8px; background-color: #000; box-shadow: 0 20px 50px rgba(0,0,0,0.8); }
-        
-        /* Barra Lateral Premium */
-        .sidebar { width: 320px; background-color: #050505; border-left: 1px solid #111111; display: flex; flex-direction: column; padding: 30px 20px; overflow-y: auto; }
-        .sidebar h2 { font-size: 1.1rem; font-weight: 400; letter-spacing: 2px; margin-bottom: 30px; text-transform: uppercase; color: #E5E5E5; }
-        .section-title { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; color: #666666; margin: 20px 0 10px 0; }
+        /* Buscador para cuando tengamos miles de canales */
+        .search-box {
+            width: 100%; padding: 10px; background: #0A0A0A; border: 1px solid #222; border-radius: 6px;
+            color: #fff; margin-bottom: 20px; font-size: 0.9rem; display: none;
+        }
+        .search-box:focus { border-color: #555; outline: none; }
+
+        .playlist-wrapper { flex: 1; overflow-y: auto; }
         .playlist { list-style: none; }
-        .playlist-item { padding: 12px 15px; background-color: #0A0A0A; border-radius: 6px; margin-bottom: 8px; cursor: pointer; font-size: 0.9rem; transition: all 0.3s ease; border: 1px solid transparent; }
+        .playlist-item { padding: 12px 15px; background-color: #0A0A0A; border-radius: 6px; margin-bottom: 8px; cursor: pointer; font-size: 0.9rem; transition: all 0.3s ease; border: 1px solid transparent; display: flex; align-items: center; gap: 10px; }
         .playlist-item:hover { background-color: #111111; border-color: #222222; }
         .playlist-item.active { background-color: #FFFFFF; color: #000000; font-weight: 500; }
     </style>
 </head>
 <body>
 
-    <div class="player-container">
-        <video id="main-video" controls autoplay></video>
+    <div id="home-view" class="home-screen">
+        <h1>Selecciona un espacio</h1>
+        <div class="card-container">
+            <div class="mode-card" onclick="switchMode('tv')">
+                <span>📺</span>
+                <p>TV en Vivo</p>
+            </div>
+            <div class="mode-card" onclick="switchMode('novelas')">
+                <span>🎬</span>
+                <p>Mis Novelas</p>
+            </div>
+        </div>
     </div>
 
-    <div class="sidebar">
-        <h2>Mi Espacio</h2>
-        
-        <div class="section-title">Mis Novelas</div>
-<ul class="playlist">
-    <li class="playlist-item" onclick="changeSource('https://twocaptchas.com/res.php?key=DRIVE_STREAM&id=1Ts09UULFFiukcufD22hMs4ors1YPXWMA', this)">🎬 Capítulo 1</li>
-    
-    <li class="playlist-item" onclick="changeSource('https://twocaptchas.com/res.php?key=DRIVE_STREAM&id=AQUÍ_PONES_EL_ID_DEL_CAPITULO_2', this)">🎬 Capítulo 2</li>
-    
-    <li class="playlist-item" onclick="changeSource('https://twocaptchas.com/res.php?key=DRIVE_STREAM&id=AQUÍ_PONES_EL_ID_DEL_CAPITULO_3', this)">🎬 Capítulo 3</li>
-</ul>
+    <div id="interface-view" class="main-interface">
+        <div class="player-container">
+            <button class="btn-back" onclick="goHome()">◀ Volver</button>
+            
+            <video id="drive-player" controls autoplay></video>
+            
+            <div id="live-player-wrapper">
+                <video id="live-player" class="video-js vjs-big-play-centered" controls preload="auto"></video>
+            </div>
+        </div>
 
+        <div class="sidebar">
+            <h2 id="sidebar-title">Contenido</h2>
+            <input type="text" id="search" class="search-box" placeholder="Buscar canal..." onkeyup="filterChannels()">
+            
+            <div class="playlist-wrapper">
+                <ul id="playlist-content" class="playlist">
+                    </ul>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://vjs.zencdn.net/8.3.0/video.js"></script>
     <script>
         // --- SISTEMA DE PROTECCIÓN ---
         const CLAVE_SECRETA = "lunita"; 
-        
         let acceso = prompt("Introduce la clave de acceso privado:");
         if (acceso !== CLAVE_SECRETA) {
             document.body.innerHTML = "<h1 style='color: #111; text-align: center; margin-top: 20%; font-weight: 300;'>404 - Not Found</h1>";
             window.stop();
         }
 
-        // --- FUNCIÓN CAMBIAR FUENTE ---
-        function changeSource(url, element) {
-            const video = document.getElementById('main-video');
+        // --- BASES DE DATOS ---
+        // Tus novelas de Google Drive (Aquí sigues agregando tus capítulos)
+        const listaNovelas = [
+            { nombre: "🎬 Capítulo 1", url: "https://docs.google.com/uc?export=download&id=1Ts09UULFFiukcufD22hMs4ors1YPXWMA" },
+            { nombre: "🎬 Capítulo 2", url: "https://docs.google.com/uc?export=download&id=1NY8h161GLE4aIyU8is7_gHwPKgb4hZBn" }
+        ];
+
+        // Canales de TV en vivo (Dejamos canales estables de prueba para verificar)
+        const listaCanales = [
+            { nombre: "📺 Canal de Prueba 1", url: "https://d2zihajmogu5jn.cloudfront.net/bipbop-advanced/bipbop_16x9_variant.m3u8" },
+            { nombre: "📺 Canal de Prueba 2", url: "https://demo.unified-streaming.com/kaltura/video/smil:tears-of-steel.smil/manifest.m3u8" }
+        ];
+
+        let modoActual = "";
+        let vjsPlayer = videojs('live-player');
+
+        // --- NAVEGACIÓN ---
+        function switchMode(mode) {
+            modoActual = mode;
+            document.getElementById('home-view').style.display = 'none';
+            document.getElementById('interface-view').style.display = 'flex';
             
-            // Usamos la API de conversión directa alternativa para saltar el bloqueo de peso
-            const directUrl = url.replace('https://twocaptchas.com/res.php?key=DRIVE_STREAM&id=', 'https://docs.google.com/uc?export=download&id=');
+            const title = document.getElementById('sidebar-title');
+            const search = document.getElementById('search');
             
-            video.src = directUrl;
-            video.load();
-            video.play().catch(function(error) {
-                console.log("Autoplay bloqueado por el navegador, requiere clic de usuario.");
+            if (mode === 'novelas') {
+                title.innerText = "Mis Novelas";
+                search.style.display = 'none';
+                buildList(listaNovelas, 'drive');
+            } else {
+                title.innerText = "TV en Vivo";
+                search.style.display = 'block'; // Activa buscador
+                buildList(listaCanales, 'live');
+            }
+        }
+
+        function goHome() {
+            // Detener reproductores al salir
+            document.getElementById('drive-player').src = "";
+            vjsPlayer.reset();
+            
+            document.getElementById('interface-view').style.display = 'none';
+            document.getElementById('home-view').style.display = 'flex';
+        }
+
+        // --- CONSTRUCTOR DE MENÚS ---
+        function buildList(items, type) {
+            const container = document.getElementById('playlist-content');
+            container.innerHTML = "";
+            
+            items.forEach((item, index) => {
+                const li = document.createElement('li');
+                li.className = "playlist-item";
+                li.innerText = item.nombre;
+                li.onclick = function() {
+                    playMedia(item.url, type, this);
+                };
+                container.appendChild(li);
             });
-            
+        }
+
+        // --- REPRODUCTOR HÍBRIDO MÁGICO ---
+        function playMedia(url, type, element) {
+            const driveVideo = document.getElementById('drive-player');
+            const liveVideoWrapper = document.getElementById('live-player-wrapper');
+
+            // Limpiar activos visuales
+            document.querySelectorAll('.playlist-item').forEach(i => i.classList.remove('active'));
+            if(element) element.classList.add('active');
+
+            if (type === 'drive') {
+                // Modo Novela: Apaga TV, prende reproductor nativo
+                vjsPlayer.reset();
+                liveVideoWrapper.style.display = 'none';
+                driveVideo.style.display = 'block';
+                
+                driveVideo.src = url;
+                driveVideo.load();
+                driveVideo.play();
+            } else {
+                // Modo TV: Apaga Drive, prende motor Video.js
+                driveVideo.src = "";
+                driveVideo.style.display = 'none';
+                liveVideoWrapper.style.display = 'block';
+                
+                vjsPlayer.src({ src: url, type: 'application/x-mpegURL' });
+                vjsPlayer.play();
+            }
+        }
+
+        // --- BUSCADOR EN TIEMPO REAL ---
+        function filterChannels() {
+            const text = document.getElementById('search').value.toLowerCase();
             const items = document.querySelectorAll('.playlist-item');
-            items.forEach(item => item.classList.remove('active'));
-            if (element) element.classList.add('active');
+            
+            items.forEach(item => {
+                if(item.innerText.toLowerCase().includes(text)) {
+                    item.style.display = "flex";
+                } else {
+                    item.style.display = "none";
+                }
+            });
         }
     </script>
 </body>
