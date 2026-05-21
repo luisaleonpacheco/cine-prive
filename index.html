@@ -35,18 +35,18 @@
         
         <div class="section-title">En Directo (TV)</div>
         <ul class="playlist">
-            <li class="playlist-item" onclick="changeSource('https://d2zihajmogu5jn.cloudfront.net/bipbop-advanced/bipbop_16x9_variant.m3u8')">📺 Canal de Prueba</li>
+            <li class="playlist-item" onclick="changeSource('https://d2zihajmogu5jn.cloudfront.net/bipbop-advanced/bipbop_16x9_variant.m3u8', this)">📺 Canal de Prueba</li>
         </ul>
 
         <div class="section-title">Mis Novelas</div>
         <ul class="playlist">
-            <li class="playlist-item" onclick="changeSource('https://drive.google.com/file/d/1Ts09UULFFiukcufD22hMs4ors1YPXWMA/preview')">🎬 Capítulo 1</li>
+            <li class="playlist-item" onclick="changeSource('https://drive.google.com/file/d/1Ts09UULFFiukcufD22hMs4ors1YPXWMA/preview', this)">🎬 Capítulo 1</li>
         </ul>
     </div>
 
     <script>
         // --- SISTEMA DE PROTECCIÓN ---
-        const CLAVE_SECRETA = "lunita"; // <-- CAMBIA ESTO por tu contraseña manteniendo las comillas
+        const CLAVE_SECRETA = "lunita"; 
         
         let acceso = prompt("Introduce la clave de acceso privado:");
         if (acceso !== CLAVE_SECRETA) {
@@ -55,14 +55,17 @@
         }
 
         // --- FUNCIÓN CAMBIAR FUENTE ---
-        function changeSource(url) {
+        function changeSource(url, element) {
             const player = document.getElementById('video-player');
             player.src = url;
             
-            // Estilo de botón activo
+            // Estilo de botón activo seguro
             const items = document.querySelectorAll('.playlist-item');
             items.forEach(item => item.classList.remove('active'));
-            event.target.classList.add('active');
+            
+            if (element) {
+                element.classList.add('active');
+            }
         }
     </script>
 </body>
