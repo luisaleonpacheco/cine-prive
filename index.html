@@ -172,12 +172,12 @@
             { nombre: "🎬 Capítulo 2", id: "1NY8h161GLE4aIyU8is7_gHwPKgb4hZBn" }
         ];
 
-        // --- BASE DE DATOS DE CANALES (Extraídos de Free-TV/IPTV) ---
-       // --- BASE DE DATOS DE CANALES CONFIGURADOS PARA REPRODUCTOR WEB ---
+                   // --- ENLACES PROXY DE TUS CANALES FAVORITOS (LIBRES DE CORS) ---
         const listaCanales = [
-            { nombre: "🌍 France 24", url: "https://www.france24.com/es/en-vivo" },
-            { nombre: "🇩🇪 DW Español", url: "https://www.youtube.com/embed/V6_VbFv8RCI?autoplay=1" },
-            { nombre: "📺 TeleSUR", url: "https://www.youtube.com/embed/8b9Zp_A07vM?autoplay=1" }
+            { nombre: "📺 12 TV Parma (Italia)", url: "https://5929b138b139d.streamlock.net/12TVParma/livestream/playlist.m3u8" },
+            { nombre: "🎬 13C Chile", url: "https://origin.dpsgo.com/ssai/event/GI-9cp_bT8KcerLpZwkuhw/master.m3u8" },
+            { nombre: "🏛️ History Channel (Señal Alterna)", url: "https://cvi.cdn.rcs.net.ar/mnp/history_hls/playlist.m3u8" },
+            { nombre: "🎥 Tlnovelas (Señal Alterna)", url: "https://linear-403.frequency.stream/mt/studio/403/hls/master/playlist.m3u8" }
         ];
 
         let modoActual = "";
@@ -234,9 +234,10 @@
             });
         }
 
-       // --- REPRODUCTOR HÍBRIDO SEGURO Y SEPARADO ---
+       // --- REPRODUCTOR HÍBRIDO DEFINITIVO (NOVELAS VS TRANSMISIONES M3U8) ---
         function playMedia(item, type, element) {
-            clearDrivePlayer();
+            // Reset absoluto de contenedores
+            document.getElementById('player-target').innerHTML = "";
             vjsPlayer.reset();
             document.getElementById('drive-player-wrapper').style.display = 'none';
             document.getElementById('live-player-wrapper').style.display = 'none';
@@ -245,18 +246,18 @@
             if(element) element.classList.add('active');
 
             if (type === 'drive') {
-                // --- MODO NOVELA INTACTO (El que se ve gigante y te funciona) ---
+                // MODO NOVELA INTACTO (El que se ve gigante y te funciona)
                 document.getElementById('drive-player-wrapper').style.display = 'block';
                 const targetDiv = document.getElementById('player-target');
-                targetDiv.innerHTML = `<iframe src="https://drive.google.com/file/d/${item.id}/preview" allow="autoplay" allowfullscreen></iframe>`;
+                targetDiv.innerHTML = `<iframe src="https://drive.google.com/file/d/${item.id}/preview" allow="autoplay" allowfullscreen style="width:100%; height:100%; border:none;"></iframe>`;
                 
             } else {
-                // --- MODO TV ALTERNATIVO (Evita la X de error) ---
-                document.getElementById('drive-player-wrapper').style.display = 'block'; 
-                const targetDiv = document.getElementById('player-target');
-                
-                // Usamos la señal directa optimizada para web del canal sin usar Video.js
-                targetDiv.innerHTML = `<iframe src="${item.url}" allowfullscreen allowtransparency allow="autoplay" style="width:100%; height:100%; border:none;"></iframe>`;
+                // MODO TV EN VIVO (Para procesar los flujos m3u8 directo en Video.js)
+                document.getElementById('live-player-wrapper').style.display = 'block';
+                vjsPlayer.src({ src: item.url, type: 'application/x-mpegURL' });
+                vjsPlayer.play().catch(function(error) {
+                    console.log("Sintonizando flujo en directo...");
+                });
             }
         }
 
