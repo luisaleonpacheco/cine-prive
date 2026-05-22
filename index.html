@@ -5,10 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cinema Privé - Premium</title>
     <link href="https://vjs.zencdn.net/8.3.0/video-js.css" rel="stylesheet" />
-    <link rel="stylesheet" href="https://cdn.plyr.io/3.7.8/plyr.css" />
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: sans-serif; }
-        body { background-color: #000000; color: #FFFFFF; height: 100vh; overflow: hidden; }
+        body { background-color: #000000; color: #FFFFFF; min-height: 100vh; overflow-x: hidden; }
 
         /* PANTALLA DE INICIO (HOME) */
         .home-screen {
@@ -16,15 +15,16 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            height: 100vh;
+            min-height: 100vh;
             background-color: #000000;
-            gap: 40px;
+            gap: 30px;
+            padding: 20px;
         }
-        .home-screen h1 { font-size: 1.8rem; font-weight: 300; letter-spacing: 4px; text-transform: uppercase; color: #E5E5E5; }
-        .card-container { display: flex; gap: 30px; }
+        .home-screen h1 { font-size: 1.5rem; font-weight: 300; letter-spacing: 4px; text-transform: uppercase; color: #E5E5E5; text-align: center; }
+        .card-container { display: flex; gap: 20px; flex-wrap: wrap; justify-content: center; }
         .mode-card {
-            width: 240px;
-            height: 160px;
+            width: 220px;
+            height: 150px;
             background-color: #050505;
             border: 1px solid #111111;
             border-radius: 8px;
@@ -36,34 +36,55 @@
             transition: all 0.3s ease;
         }
         .mode-card:hover { background-color: #111111; border-color: #333333; transform: scale(1.05); }
-        .mode-card span { font-size: 2.5rem; margin-bottom: 10px; }
-        .mode-card p { font-size: 0.9rem; text-transform: uppercase; letter-spacing: 2px; font-weight: bold; }
+        .mode-card span { font-size: 2.2rem; margin-bottom: 10px; }
+        .mode-card p { font-size: 0.85rem; text-transform: uppercase; letter-spacing: 2px; font-weight: bold; }
 
-        /* INTERFAZ DEL REPRODUCTOR */
-        .main-interface { display: none; height: 100vh; width: 100%; }
+        /* INTERFAZ DEL REPRODUCTOR PRINCIPAL */
+        .main-interface { display: none; height: 100vh; width: 100%; flex-direction: row; }
         .player-container { flex: 1; display: flex; align-items: center; justify-content: center; padding: 40px; background-color: #000000; position: relative; }
         
         /* Botón para volver al Home */
         .btn-back {
-            position: absolute; top: 20px; left: 20px; background: #050505; border: 1px solid #222;
+            position: absolute; top: 15px; left: 20px; background: #050505; border: 1px solid #222;
             color: #fff; padding: 10px 15px; border-radius: 4px; cursor: pointer; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 1px; z-index: 10;
         }
         .btn-back:hover { background: #111; }
 
-        /* FUERZA BRUTA PARA EL TAMAÑO DEL REPRODUCTOR (Ocupar el centro gigante) */
-        #drive-player-wrapper { width: 100%; height: 85%; max-width: 1000px; display: none; border-radius: 8px; overflow: hidden; box-shadow: 0 20px 50px rgba(0,0,0,0.8); }
-        #player-target { width: 100%; height: 100%; }
+        /* MAQUETACIÓN PARA OCUPAR LA PANTALLA GIGANTE EN PC */
+        #drive-player-wrapper { 
+            width: 100%; 
+            height: 80%; 
+            max-width: 1100px; 
+            display: none; 
+            border-radius: 8px; 
+            overflow: hidden; 
+            box-shadow: 0 20px 50px rgba(0,0,0,0.8);
+            background: #000;
+        }
         
-        /* Modificamos las entrañas de Plyr para que no se encoja */
-        .plyr__video-embed { width: 100% !important; height: 100% !important; padding-bottom: 0 !important; aspect-ratio: 16/9; }
-        .plyr__video-embed iframe { width: 100% !important; height: 100% !important; top: 0 !important; left: 0 !important; }
-
-        /* Contenedor para Canales */
-        #live-player-wrapper { width: 100%; height: 85%; max-width: 1000px; display: none; border-radius: 8px; overflow: hidden; box-shadow: 0 20px 50px rgba(0,0,0,0.8); }
+        /* Contenedor Responsive Proporcional 16:9 Nativo */
+        .video-responsive-container {
+            position: relative;
+            width: 100%;
+            height: 100%;
+        }
+        
+        /* Forzamos al iframe de Drive a ocupar todo el espacio central */
+        .video-responsive-container iframe { 
+            position: absolute; 
+            top: 0; 
+            left: 0; 
+            width: 100% !important; 
+            height: 100% !important; 
+            border: none;
+        }
+        
+        /* Contenedor para TV en Vivo */
+        #live-player-wrapper { width: 100%; height: 80%; max-width: 1100px; display: none; border-radius: 8px; overflow: hidden; box-shadow: 0 20px 50px rgba(0,0,0,0.8); }
         .video-js { width: 100% !important; height: 100% !important; }
 
-        /* BARRA LATERAL DINÁMICA */
-        .sidebar { width: 320px; background-color: #050505; border-left: 1px solid #111111; display: flex; flex-direction: column; padding: 30px 20px; }
+        /* BARRA LATERAL ESCRITORIO */
+        .sidebar { width: 320px; background-color: #050505; border-left: 1px solid #111111; display: flex; flex-direction: column; padding: 30px 20px; height: 100vh; }
         .sidebar h2 { font-size: 1.1rem; font-weight: 400; letter-spacing: 2px; margin-bottom: 20px; text-transform: uppercase; color: #E5E5E5; }
         
         /* Buscador inteligente */
@@ -78,6 +99,21 @@
         .playlist-item { padding: 12px 15px; background-color: #0A0A0A; border-radius: 6px; margin-bottom: 8px; cursor: pointer; font-size: 0.9rem; transition: all 0.3s ease; border: 1px solid transparent; display: flex; align-items: center; gap: 10px; }
         .playlist-item:hover { background-color: #111111; border-color: #222222; }
         .playlist-item.active { background-color: #FFFFFF; color: #000000; font-weight: 500; }
+
+        /* =========================================================
+           🌍 ADAPTACIÓN RESPONSIVE AUTOMÁTICA (MÓVILES Y TABLETS)
+           ========================================================= */
+        @media (max-width: 991px) {
+            body { overflow-y: auto; }
+            .main-interface { flex-direction: column; height: auto; }
+            .player-container { width: 100%; height: auto; padding: 70px 10px 10px 10px; }
+            
+            #drive-player-wrapper, #live-player-wrapper { 
+                height: auto; 
+                aspect-ratio: 16/9; 
+            }
+            .video-responsive-container { padding-bottom: 56.25%; height: 0; }
+        }
     </style>
 </head>
 <body>
@@ -101,7 +137,7 @@
             <button class="btn-back" onclick="goHome()">◀ Volver</button>
             
             <div id="drive-player-wrapper">
-                <div id="player-target"></div>
+                <div class="video-responsive-container" id="player-target"></div>
             </div>
             
             <div id="live-player-wrapper">
@@ -121,7 +157,6 @@
     </div>
 
     <script src="https://vjs.zencdn.net/8.3.0/video.js"></script>
-    <script src="https://cdn.plyr.io/3.7.8/plyr.polyfilled.js"></script>
     <script>
         // --- SISTEMA DE PROTECCIÓN ---
         const CLAVE_SECRETA = "lunita"; 
@@ -131,20 +166,22 @@
             window.stop();
         }
 
-        // --- BASE DE DATOS ULTRA LIMPIA ---
+        // --- BASE DE DATOS ULTRA LIMPIA (Solo pones el ID de tu Drive) ---
         const listaNovelas = [
             { nombre: "🎬 Capítulo 1", id: "1Ts09UULFFiukcufD22hMs4ors1YPXWMA" },
             { nombre: "🎬 Capítulo 2", id: "1NY8h161GLE4aIyU8is7_gHwPKgb4hZBn" }
         ];
 
+        // --- BASE DE DATOS DE CANALES (Extraídos de Free-TV/IPTV) ---
+       // --- BASE DE DATOS DE CANALES CONFIGURADOS PARA REPRODUCTOR WEB ---
         const listaCanales = [
-            { nombre: "📺 Canal de Prueba 1", url: "https://d2zihajmogu5jn.cloudfront.net/bipbop-advanced/bipbop_16x9_variant.m3u8" },
-            { nombre: "📺 Canal de Prueba 2", url: "https://demo.unified-streaming.com/kaltura/video/smil:tears-of-steel.smil/manifest.m3u8" }
+            { nombre: "🇻🇪 Venevisión (Señal Alterna)", url: "https://stream.tvvenezuela.tv/tvv/live/playlist.m3u8" },
+            { nombre: "📺 Televen", url: "https://televen-live.itvfree.workers.dev/live.m3u8" },
+            { nombre: "🌍 France 24 Español", url: "https://static.france24.com/live/F24_ES_LO_HLS/live_tv.m3u8" }
         ];
 
         let modoActual = "";
         let vjsPlayer = videojs('live-player');
-        let plyrPlayer = null;
 
         // --- NAVEGACIÓN ---
         function switchMode(mode) {
@@ -166,20 +203,19 @@
             }
         }
 
-        // --- DESTRUCCIÓN LIMPIA PARA EVITAR ERRORES DE TAMAÑO ---
         function goHome() {
-            if (plyrPlayer) {
-                plyrPlayer.destroy();
-                plyrPlayer = null;
-            }
-            document.getElementById('player-target').innerHTML = "";
+            clearDrivePlayer();
             vjsPlayer.reset();
             
             document.getElementById('drive-player-wrapper').style.display = 'none';
             document.getElementById('live-player-wrapper').style.display = 'none';
             
-            document.getElementById('interface-view').style.display = 'none';
             document.getElementById('home-view').style.display = 'flex';
+            document.getElementById('interface-view').style.display = 'none';
+        }
+
+        function clearDrivePlayer() {
+            document.getElementById('player-target').innerHTML = "";
         }
 
         // --- RECONSTRUCTOR DE MENÚS ---
@@ -198,14 +234,9 @@
             });
         }
 
-        // --- REPRODUCTOR INTEGRAL CORREGIDO ---
+        // --- REPRODUCTOR INTEGRAL SEGURO ---
         function playMedia(item, type, element) {
-            // Reset de estados
-            if (plyrPlayer) {
-                plyrPlayer.destroy();
-                plyrPlayer = null;
-            }
-            document.getElementById('player-target').innerHTML = "";
+            clearDrivePlayer();
             vjsPlayer.reset();
             document.getElementById('drive-player-wrapper').style.display = 'none';
             document.getElementById('live-player-wrapper').style.display = 'none';
@@ -214,18 +245,12 @@
             if(element) element.classList.add('active');
 
             if (type === 'drive') {
-                // ACTIVAR NOVELA GIGANTE
+                // ACTIVAR NOVELA GIGANTE CON PREVIEW OFICIAL
                 document.getElementById('drive-player-wrapper').style.display = 'block';
-                
                 const targetDiv = document.getElementById('player-target');
-                // Forzamos al iframe a heredar las propiedades del padre al 100%
-                targetDiv.innerHTML = `<div class="plyr__video-embed" id="video-plyr-target" style="width:100%; height:100%;">
-                    <iframe src="https://drive.google.com/file/d/${item.id}/preview" allowfullscreen allowtransparency allow="autoplay" style="width:100%; height:100%;"></iframe>
-                </div>`;
                 
-                plyrPlayer = new Plyr('#video-plyr-target', {
-                    fullscreen: { enabled: true, fallback: true, iosNative: true }
-                });
+                // Inyectamos el iframe con clases de fuerza absoluta CSS
+                targetDiv.innerHTML = `<iframe src="https://drive.google.com/file/d/${item.id}/preview" allow="autoplay" allowfullscreen></iframe>`;
                 
             } else {
                 // ACTIVAR TV EN VIVO
